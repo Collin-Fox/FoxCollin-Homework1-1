@@ -8,6 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer>{
+    Product findProductBySKU(int SKU);
     List<Product> findProductByCATEGORY(String CATEGORY);
     List<Product> findByPRICEBetween(double lowerBound, double upperBound);
 

@@ -1,8 +1,11 @@
 package com.collin.fox.FoxCollinHomework1;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,70 +20,88 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-
-/*
-    @GetMapping("/NEW/PRODUCT/{sku}/{name}/{desc}/{cat}/{price}")
-    public String createProduct(
-            @PathVariable("sku") String sku,
-            @PathVariable("name") String name,
-            @PathVariable("desc") String desc,
-            @PathVariable("cat") String cat,
-            @PathVariable("price") String price
-    ){
-        Product tempProduct = new Product(Integer.valueOf(sku), name, desc, cat, Double.valueOf(price));
-        System.out.println(tempProduct.toString());
-        return productService.createProduct(tempProduct);
-    }
-
- */
-
-
-
+    //DONE
     @GetMapping("/")
     public List<Product> getAllProducts(){
         return productService.getAllProducts();
     }
 
+    //DONE
     @GetMapping("/SKU/{SKU}")
-    public ResponseEntity<Optional<Product>> getProductBySKU(@PathVariable("SKU") String SKU){
-        /***
-         * TODO's: Return error 404 if product not found
-         */
-        ResponseEntity getResponse;
-        if(productService.getProductBySKU(Integer.parseInt(SKU)).get() != null){
-            getResponse = new ResponseEntity<Optional<Product>>(productService.getProductBySKU(Integer.parseInt(SKU)), HttpStatus.OK);
+    public ResponseEntity<Product> getProductBySKU(@PathVariable("SKU") String SKU){
+        Product product = productService.getProductBySKU(Integer.parseInt(SKU));
+        if(product != null){
+            return new ResponseEntity<>(product, HttpStatus.OK);
         }else{
-            getResponse = new ResponseEntity<>("HttpStatus.NOT_FOUND.getReasonPhrase()", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return getResponse;
     }
 
-    @GetMapping("/CATEGORY/{CATEGORY}")
+    //DONE
+    @GetMapping("/{CATEGORY}")
     public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable("CATEGORY") String CATEGORY){
-        /***
-        * TODO's: Return error 404 if product not found
-        */
         List<Product> products = productService.getProductsByCategory(CATEGORY);
-
-        return new ResponseEntity<List<Product>>(productService.getProductsByCategory(CATEGORY), HttpStatus.OK);
+        if(!products.isEmpty()){
+            return new ResponseEntity<>(products, HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
-   @GetMapping("/PRICE/{lowerBound}/{upperBound}")
+    //DONE
+    @GetMapping("/COUNT/{CATEGORY}")
+    public ResponseEntity<Integer> getProductCount(@PathVariable("CATEGORY") String CATEGORY){
+        int listSize = productService.getCategorySize(CATEGORY);
+        if(listSize != 0){
+            return new ResponseEntity<>(listSize, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    //DONE
+   @GetMapping("/PRICE/LOWER/{lowerBound}/UPPER/{upperBound}")
     public ResponseEntity<List<Product>> getProductsBetweenPrice(@PathVariable("lowerBound") String lowerBound, @PathVariable("upperBound") String upperBound){
         return new ResponseEntity<List<Product>>(productService.getProductsWithinPriceRange(Double.valueOf(lowerBound), Double.valueOf(upperBound)), HttpStatus.OK);
    }
 
+   //DONE
    @GetMapping("/SEARCH/{search}")
     public ResponseEntity<List<Product>> getProductsBySearch(@PathVariable("search")String search){
-        String searchQuery = "%"+search+"%";
         return new ResponseEntity<List<Product>>(productService.getProductsBySearch("%"+search+"%"), HttpStatus.OK);
    }
 
-   @PostMapping("/POST")
-    public String insertProduct(@RequestBody Product product){
-        String postRequest = productService.createProduct(product);
-        return postRequest;
+   //DONE
+   @PostMapping(value ="/product", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Product> createProduct(@RequestBody final Product product){
+        if(!productService.isProduct(product)){
+            return new ResponseEntity<Product>(productService.createProduct(product), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<Product>(product, HttpStatus.FOUND);
+        }
    }
+
+   //DONE
+   @PutMapping(value = "/product", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Product> editProduct(@RequestBody final Product product){
+        if(productService.isProduct(product)){
+            return new ResponseEntity<>(productService.createProduct(product), HttpStatus.OK);
+        } else{
+            return new ResponseEntity<>(product, HttpStatus.NOT_FOUND);
+        }
+   }
+
+   //DONE
+   @DeleteMapping("/product/{SKU}")
+    public ResponseEntity<Product> deleteProduct(@PathVariable("SKU") int SKU) throws SQLException {
+        Product product = productService.getProductBySKU(SKU);
+        if (product != null){
+            return new ResponseEntity<>(productService.deleteProduct(product), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+   }
+
 
 
 
