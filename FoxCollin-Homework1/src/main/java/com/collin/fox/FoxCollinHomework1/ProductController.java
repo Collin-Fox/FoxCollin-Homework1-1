@@ -9,11 +9,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-/***
- * TODO: Send error 404 for first two
- * TODO: Return integer value for category search
- * TODO:
- */
+
 @RestController
 @RequestMapping("")
 public class ProductController {
@@ -100,6 +96,13 @@ public class ProductController {
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+   }
+
+
+    // Graduate Extra Credit Work
+   @GetMapping("/summary")
+    public List<SummaryInterface> getSummary(){
+        return productService.getSummary();
    }
 
 
